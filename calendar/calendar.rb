@@ -4,6 +4,7 @@ require 'google/api_client/client_secrets'
 require 'google/api_client/auth/file_storage'
 require 'sinatra'
 require 'logger'
+require 'debugger'
 
 enable :sessions
 
@@ -35,7 +36,7 @@ configure do
   client = Google::APIClient.new(
     :application_name => 'Ruby Calendar sample',
     :application_version => '1.0.0')
-  
+
   file_storage = Google::APIClient::FileStorage.new(CREDENTIAL_STORE_FILE)
   if file_storage.authorization.nil?
     client_secrets = Google::APIClient::ClientSecrets.load
@@ -50,6 +51,7 @@ configure do
   # If this is still an issue, you could serialize the object and load it on
   # subsequent runs.
   calendar = client.discovered_api('calendar', 'v3')
+  # debugger
 
   set :logger, logger
   set :api_client, client
@@ -88,8 +90,15 @@ end
 
 get '/' do
   # Fetch list of events on the user's default calandar
-  result = api_client.execute(:api_method => calendar_api.events.list,
-                              :parameters => {'calendarId' => 'primary'},
+  # debugger
+  result = api_client.execute(:api_method => calendar_api.events.quick_add,
+                              :parameters => {
+                                'calendarId' => 'janetyi90@gmail.com',
+                                'text' => "test event2",
+                                'sendNotifications' => false,
+                                'start' => DateTime.now,
+                                'end' => DateTime.now
+                                },
                               :authorization => user_credentials)
   [result.status, {'Content-Type' => 'application/json'}, result.data.to_json]
 end
